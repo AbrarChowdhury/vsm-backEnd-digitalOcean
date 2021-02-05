@@ -1,10 +1,9 @@
 const http = require('http');
 const express = require('express');
+const WebSocket = require('ws')
 const bodyParser  = require("body-parser")
 const mongoose = require('mongoose')
-const socketio = require('socket.io')
-
-
+const port = 8080
 const cors = require('cors')
 
 //db
@@ -19,51 +18,45 @@ mongoose.connect(dbUri, {useNewUrlParser: true, useUnifiedTopology: true}, funct
 
 const router = require('./router');
 
-let count=0
 const app = express();
 app.use(cors())
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json())
-const server = http.createServer(app);
-const io = socketio(server);
-
-let espCount = "nothing yet"
-let spo2 = "nothing yet" 
-let pulse ="hardware-fix, Naming convention"
-let temp = "nothing yet" 
-let ecg = "nothing yet" 
-
-
-// SOCKET IO 
-io.on('connection', ( socket ) => {
-    console.log('new connection')
-    // console.log(socket)
-
-    socket.on('vsm',({ inputValue })=>{
-        console.log("ping", inputValue)
-        
-    })
-    socket.on('message',(message)=>{
-        console.log('_____________________________________')
-        console.log("ESP-Data ->")
-        console.log(message);
-        console.log('_____________________________________')
-        //sends to all clients except sender
-        socket.broadcast.emit('message', message)
-    })
-    // setInterval(()=>{
-    //     socket.emit('live', { count ,espCount, spo2, pulse, temp, ecg })
-    //     count++ 
-    // },3000)
-    socket.emit('vsm',"hello esp");
-    
-    socket.on('disconnect',()=>{
-        console.log('____________DISCONNECTED_________________________')
-        console.log('user had left')
-    })
-
-})
-
 app.use(router);
 
-server.listen(process.env.PORT || 5000, () => console.log(`Server has started.`));
+let connection
+const httpServer = http.createServer(app)
+const wss = new WebSocket.Server({
+    'server': httpServer
+})
+
+app.get("/",(req,res)=>{
+    res.send(`VSM Bioforge ${connection}`)
+})
+
+wss.on("connection", function (ws) {
+  console.log("new client connected");
+  connection = "connected"
+  ws.on("close", function () {
+    console.log("lost one client");
+  });
+  ws.on("message", function (message) {
+    console.log("Received: " + message)
+    console.log("---------------------------")
+    //broadcast incoming message to all clients (s.clients)
+    if((JSON.parse(message).password==1234) && (JSON.parse(message).deviceId=="vsmBioforge")){
+      wss.clients.forEach(function (client) {
+        if (client != ws && client.readyState) {
+          client.send(message)
+        }
+      });
+    }else{
+      console.log("un-authorized device");
+    }
+  });
+});
+wss.on("close",()=>{
+  console.log("client disconnected")
+})
+
+httpServer.listen(port, ()=>console.log(`server listening at port ${port}`))

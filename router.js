@@ -34,6 +34,7 @@ router.get("/patient/:bed", (req,res)=>{
   Patient.findOne({ bed: bed }, function (err, patient){
     if(err){
         console.log(err)
+        res.json("no patient")
     }else{
         res.json(patient)
     }
