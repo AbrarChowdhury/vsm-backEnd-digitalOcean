@@ -11,8 +11,10 @@ router.post("/patient", (req,res) => {
   patient.save((err)=>{
         if(err){
             console.log(err)
+            res.error(err)
         }else{
             console.log("new patient admitted")
+            res.status(201)
         }
     })
 })
