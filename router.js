@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const Patient = require("./models/patient")
+const Bed = require("./models/bed")
 
-
-//____ Create ______
+//____ Create _________________________________________
 router.post("/patient", (req,res) => {
   const {name, age, sex, bed} = req.body
   console.log("new user", name, bed, age, sex)
@@ -18,8 +18,7 @@ router.post("/patient", (req,res) => {
         }
     })
 })
-
-//____ Read All______
+//____ Read All__________________________________________
 router.get("/patient", (req,res)=>{
   Patient.find( function (err, patients) {
     if(err){
@@ -30,7 +29,7 @@ router.get("/patient", (req,res)=>{
   })
 })
 
-//____ Read ______
+//____ Read _____________________________________________
 router.get("/patient/:bed", (req,res)=>{
   const bed = parseInt(req.params.bed)
   Patient.findOne({ bed: bed }, function (err, patient){
@@ -42,10 +41,7 @@ router.get("/patient/:bed", (req,res)=>{
     }
   })
 })
-
-
-
-//____ Update ______
+//____ Update ___________________________________________
 router.put("/patient/:bed", (req,res)=>{
   const {name, age, sex} = req.body
   const bed = parseInt(req.params.bed)
@@ -59,9 +55,7 @@ router.put("/patient/:bed", (req,res)=>{
   });
 
 })
-
-
-//____ Delete ______
+//____ Delete ___________________________________________
 router.delete("/patient/:bed", (req,res)=>{
   console.log("delete route hit")
   console.log(req.body.bed)
