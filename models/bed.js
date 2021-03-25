@@ -1,7 +1,9 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose"); 
+const Patient = require("./patient")
 
 const bedSchema = new mongoose.Schema({
-    bed: Number,
-    patient:  {type: Mongoose.Schema.Types.ObjectId, ref: 'Patient'}
+    bedNumber: Number,
+    occupied: Boolean,
+    patient:  {type: mongoose.Schema.Types.ObjectId, ref: 'Patient'},
 })
 module.exports = mongoose.model('Bed', bedSchema)

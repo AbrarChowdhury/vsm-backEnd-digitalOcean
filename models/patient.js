@@ -4,5 +4,6 @@ const patientSchema = new mongoose.Schema({
     bed: Number,
     age: Number,
     sex: String,
+    current: Boolean,
 })
 module.exports = mongoose.model('Patient', patientSchema)
