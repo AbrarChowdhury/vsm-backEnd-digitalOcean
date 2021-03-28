@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "node server.js"
   },
   "author": "abrar shams chowdhury",
   "license": "ISC",
@@ -16,6 +16,6 @@
     "ws": "^7.4.3"
   },
   "devDependencies": {
-    "nodemon": "^2.0.6"
+    "nodemon": "^2.0.7"
   }
 }
