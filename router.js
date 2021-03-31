@@ -116,5 +116,19 @@ router.delete("/patient/:bed", (req, res) => {
     }
   });
 });
-
+// esp data
+router.post("/esp/:id", (req, res) => {
+  const patientId = parseInt(req.params.id);
+  Patient.findByIdAndUpdate(
+    patientId,
+    { $push: { vitalSigns: message } },
+    (err) => {
+      if (err) {
+        res.status(400)
+      }
+      console.log("stored");
+      res.status(200)
+    }
+  );
+});
 module.exports = router;
