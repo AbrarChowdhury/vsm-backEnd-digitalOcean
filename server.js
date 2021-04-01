@@ -6,8 +6,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const port = 8080;
 const cors = require("cors");
-const Patient = require("./models/patient");
-const Bed = require("./models/bed");
+
 
 mongoose.connect(
   process.env.MONGO_URI,
@@ -21,25 +20,6 @@ mongoose.connect(
   }
 );
 
-function saveToDB(bedNumber, message) {
-  console.log("save function triggered");
-  Bed.findOne({ bedNumber }, (err, { patient }) => {
-    if (err) {
-      return;
-    }
-    Patient.findByIdAndUpdate(
-      patient,
-      { $push: { vitalSigns: message } },
-      (err) => {
-        if (err) {
-          return;
-        }
-        console.log("stored");
-      }
-    );
-  });
-}
-
 const router = require("./router");
 
 const app = express();
@@ -47,6 +27,8 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(router);
+
+const { saveToDB } = require("./saveToDB");
 
 let connection;
 const httpServer = http.createServer(app);
@@ -77,7 +59,6 @@ wss.on("connection", function (ws) {
     } else {
       console.log("un-authorized device");
     }
-    console.log("called");
     saveToDB(JSON.parse(message).bedNumber, JSON.parse(message));
   });
 });

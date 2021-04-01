@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
+router.use(express.json());
 const Patient = require("./models/patient");
 const Bed = require("./models/bed");
-
+const User = require("./models/user");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 //____Bed Create _________________________________________
 router.post("/bed/:bed", (req, res) => {
@@ -71,12 +74,11 @@ router.get("/patient/:bed", (req, res) => {
             console.log(err);
             res.json("no patient");
           } else {
-            console.log(foundPatient);
             res.json(foundPatient);
           }
         });
       } else {
-        console.log("The bed is empty");
+        console.log(`bed number ${bed} is empty`);
         res.json("no patient");
       }
     }
@@ -103,6 +105,7 @@ router.put("/patient/:bed", (req, res) => {
     }
   });
 });
+
 //____ Delete ___________________________________________
 router.delete("/patient/:bed", (req, res) => {
   console.log("delete route hit");
@@ -124,11 +127,51 @@ router.post("/esp/:id", (req, res) => {
     { $push: { vitalSigns: message } },
     (err) => {
       if (err) {
-        res.status(400)
+        res.status(400);
       }
       console.log("stored");
-      res.status(200)
+      res.status(200);
     }
   );
 });
+
+router.post("/login", (req, res) => {
+  //authenticaticate
+  const { email, password } = req.body;
+  User.findOne({ email }, (err, user) => {
+    if (err) {
+      console.log(err);
+      res.status(400)
+    } else {
+      bcrypt.compare(password, user.password, function (err, result) {
+        if (result) {
+          console.log("authenticated");
+          res.status(200).json({ username: user.username, email: user.email });
+        } else {
+          console.log(err, "wrong password");
+          res.status(400).json("invalid password");
+        }
+      });
+    }
+  }).orFail(()=>{
+    res.status(400).json("user does not exist");
+  });
+});
+
+router.post("/register", (req, res) => {
+  const { email, username, password } = req.body;
+  const hashedPassword = bcrypt.hashSync(password, saltRounds);
+  const user = new User({ email, username, password: hashedPassword });
+  console.log(user);
+  user.save((err, registeredUser) => {
+    if (err) {
+      console.log("failed to create user", err);
+      res.sendStatus(400);
+    } else {
+      console.log("new user added", registeredUser);
+      res.sendStatus(200);
+    }
+  });
+});
+
 module.exports = router;

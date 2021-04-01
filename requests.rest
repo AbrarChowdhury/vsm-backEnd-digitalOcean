@@ -13,11 +13,12 @@ content-type: application/json
 
 ###
 
-POST http://localhost:5000/login HTTP/1.1
+POST http://localhost:8080/register HTTP/1.1
 content-type: application/json
+
 {
-    "username": "admin",
-    "password": "admin",
+    "email": "sarder.nayeem@jbfh.com",
+    "username": "Dr. Sarder A. Nayeem",
+    "password": "admin123",
 }
 
-##
