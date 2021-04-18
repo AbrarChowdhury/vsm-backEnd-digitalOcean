@@ -3,7 +3,6 @@ const VitalSign = require("./models/vitalSign");
 const moment = require("moment");
 
 function saveToDB(bedNumber, message) {
-
   Bed.findOne({ bedNumber }, (err, { patient }) => {
     if (err) {
       return;

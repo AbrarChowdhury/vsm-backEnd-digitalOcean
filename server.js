@@ -6,8 +6,6 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const port = 8080;
 const cors = require("cors");
-
-
 mongoose.connect(
   process.env.MONGO_URI,
   { useNewUrlParser: true, useUnifiedTopology: true },
@@ -47,8 +45,9 @@ wss.on("connection", function (ws) {
     console.log("lost one client");
   });
   ws.on("message", function (message) {
+    const now = new Date();
     console.log("Received: " + message);
-    console.log("---------------------------");
+    console.log("---------------------------", now.getMinutes(),":",now.getSeconds());
     //broadcast incoming message to all clients (s.clients)
     if (JSON.parse(message).password == process.env.VSM_PASS) {
       wss.clients.forEach(function (client) {

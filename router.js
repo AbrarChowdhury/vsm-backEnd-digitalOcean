@@ -4,8 +4,12 @@ router.use(express.json());
 const Patient = require("./models/patient");
 const Bed = require("./models/bed");
 const User = require("./models/user");
+const VitalSign = require("./models/vitalSign");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
+const moment = require("moment");
+const mongoose = require("mongoose");
+const { yesturdayAvg, todayAvg } = require("./average");
 
 //____Bed Create _________________________________________
 router.post("/bed/:bed", (req, res) => {
@@ -141,7 +145,7 @@ router.post("/login", (req, res) => {
   User.findOne({ email }, (err, user) => {
     if (err) {
       console.log(err);
-      res.status(400)
+      res.status(400);
     } else {
       bcrypt.compare(password, user.password, function (err, result) {
         if (result) {
@@ -153,7 +157,7 @@ router.post("/login", (req, res) => {
         }
       });
     }
-  }).orFail(()=>{
+  }).orFail(() => {
     res.status(400).json("user does not exist");
   });
 });
@@ -172,6 +176,31 @@ router.post("/register", (req, res) => {
       res.sendStatus(200);
     }
   });
+});
+
+router.get("/vital-signs/:patientId", (req, res) => {
+  const patientId = req.params.patientId;
+  const objectId = mongoose.Types.ObjectId(patientId);
+  const today = moment().format("MMM Do YY");
+  const yesturday = moment().subtract(1, "days").format("MMM Do YY");
+  let todaysData = [];
+  let yesturdaysData = [];
+  VitalSign.find({
+    patient: objectId,
+    date: { $gte: yesturday },
+  })
+    .then((vitalSigns) => {
+      if (!vitalSigns) {
+        res.json({ message: "no data" });
+      } else {
+        todaysData = vitalSigns.filter((vs) => vs.date == today);
+        yesturdaysData = vitalSigns.filter((vs) => vs.date == yesturday);
+        res.json([...yesturdayAvg(yesturdaysData), ...todayAvg(todaysData)]);
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
 });
 
 module.exports = router;
